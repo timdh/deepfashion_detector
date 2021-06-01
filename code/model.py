@@ -4,9 +4,8 @@ and initialization
 """
 
 import torch
-import functools
 import torch.nn as nn
-import torch.nn.functional as F
+from torch.nn.utils import spectral_norm
 
 
 def weights_init(net):
@@ -21,63 +20,86 @@ def weights_init(net):
         nn.init.normal_(net.weight.data, 1.0, 0.02)
         nn.init.constant_(net.bias.data, 0)
 
-def get_network(net_type, channels):
+def get_network(net_type, args):
     """
     return the selected network and initialize it,
     raise error if network is not recognized
     """
     if net_type == 'generator':
-        net = Generator(out_c=channels)
+        net = Generator(l_dim=args.latent_dim, ngf=args.ngf, emb_size=args.emb_size,
+                        out_c=args.channels, n_classes=args.n_classes)
     elif net_type == 'discriminator':
-        net = Discriminator(in_c=channels)
+        net = Discriminator(ndf=args.ndf, emb_size=args.emb_size, in_c=args.channels,
+                            n_classes=args.n_classes, img_size=args.img_size)
     else:
         raise NotImplementedError('network type [%s] is not recognized' % net_type)
     return net.apply(weights_init)
 
 class Generator(nn.Module):
     """
-    basic generator of the GAN
+    generator of the GAN
+    - DCGAN inspired architecure, extended with conditional input
     """
-    def __init__(self, d=128, out_c=1):
+    def __init__(self, l_dim=100, ngf=64, emb_size=50, out_c=1, n_classes=10):
         super(Generator, self).__init__()
-        self.deconv1_1 = nn.ConvTranspose2d(100, d*2, 4, 1, 0)
-        self.deconv1_1_bn = nn.BatchNorm2d(d*2)
-        self.deconv1_2 = nn.ConvTranspose2d(10, d*2, 4, 1, 0)
-        self.deconv1_2_bn = nn.BatchNorm2d(d*2)
-        self.deconv2 = nn.ConvTranspose2d(d*4, d*2, 4, 2, 1)
-        self.deconv2_bn = nn.BatchNorm2d(d*2)
-        self.deconv3 = nn.ConvTranspose2d(d*2, d, 4, 2, 1)
-        self.deconv3_bn = nn.BatchNorm2d(d)
-        self.deconv4 = nn.ConvTranspose2d(d, out_c, 4, 2, 1)
+        self.embedding = nn.Sequential(
+            nn.Embedding(n_classes, emb_size),
+            nn.Linear(emb_size, 64)
+        )
+        self.mapping = nn.Sequential(
+            # upsample
+            nn.ConvTranspose2d(l_dim, ngf*4, kernel_size=4, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(ngf*4),
+            nn.ReLU(inplace=True),
+            # upsample
+            nn.ConvTranspose2d(ngf*4, ngf*2, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(ngf*2),
+            nn.ReLU(inplace=True)
+        )
+        self.main = nn.Sequential(
+            # upsample, +1 channel for the conditional input
+            nn.ConvTranspose2d(ngf*2+1, ngf, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(ngf),
+            nn.ReLU(inplace=True),
+            # final layer
+            nn.ConvTranspose2d(ngf, out_c, kernel_size=4, stride=2, padding=3, bias=False),
+            nn.Tanh()
+        )
 
     def forward(self, input, label):
-        x = F.relu(self.deconv1_1_bn(self.deconv1_1(input)))
-        y = F.relu(self.deconv1_2_bn(self.deconv1_2(label)))
-        x = torch.cat([x, y], 1)
-        x = F.relu(self.deconv2_bn(self.deconv2(x)))
-        x = F.relu(self.deconv3_bn(self.deconv3(x)))
-        x = torch.tanh(self.deconv4(x))
-        return x
+        input = self.mapping(input)
+        label = self.embedding(label).view(input.shape[0], -1, input.shape[2], input.shape[3])
+        out = torch.cat((input, label), dim=1)
+        return self.main(out)
 
 class Discriminator(nn.Module):
     """
-    basic discriminator of the GAN
+    discriminator of the GAN
+    - DCGAN inspired architecure, extended with conditional input
+    - used spectral normalization for more stable training
     """
-    def __init__(self, d=128, in_c=1):
+    def __init__(self, ndf=64, emb_size=50, in_c=1, n_classes=10, img_size=28):
         super(Discriminator, self).__init__()
-        self.conv1_1 = nn.Conv2d(in_c, d//2, 4, 2, 1)
-        self.conv1_2 = nn.Conv2d(10, d//2, 4, 2, 1)
-        self.conv2 = nn.Conv2d(d, d*2, 4, 2, 1)
-        self.conv2_bn = nn.BatchNorm2d(d*2)
-        self.conv3 = nn.Conv2d(d*2, d*4, 4, 2, 1)
-        self.conv3_bn = nn.BatchNorm2d(d*4)
-        self.conv4 = nn.Conv2d(d * 4, 1, 4, 1, 0)
+        self.embedding = nn.Sequential(
+            nn.Embedding(n_classes, emb_size),
+            nn.Linear(emb_size, img_size * img_size)
+        )
+        self.main = nn.Sequential(
+            # downsample, +1 channel for extra conditional input
+            spectral_norm(nn.Conv2d(in_c+1, ndf, kernel_size=4, stride=2, padding=3, bias=False)),
+            nn.LeakyReLU(0.2, inplace=True),
+            # downsample
+            spectral_norm(nn.Conv2d(ndf, ndf*2, kernel_size=4, stride=2, padding=1, bias=False)),
+            nn.LeakyReLU(0.2, inplace=True),
+            # downsample
+            spectral_norm(nn.Conv2d(ndf*2, ndf*4, kernel_size=4, stride=2, padding=1, bias=False)),
+            nn.LeakyReLU(0.2, inplace=True),
+            # final layer
+            spectral_norm(nn.Conv2d(ndf*4, 1, kernel_size=4, stride=1, padding=0, bias=False)),
+            nn.Sigmoid()
+        )
 
     def forward(self, input, label):
-        x = F.leaky_relu(self.conv1_1(input), 0.2)
-        y = F.leaky_relu(self.conv1_2(label), 0.2)
-        x = torch.cat([x, y], 1)
-        x = F.leaky_relu(self.conv2_bn(self.conv2(x)), 0.2)
-        x = F.leaky_relu(self.conv3_bn(self.conv3(x)), 0.2)
-        x = torch.sigmoid(self.conv4(x))
-        return x
+        label = self.embedding(label).view(input.shape)
+        out = torch.cat((input, label), dim=1)
+        return self.main(out)
