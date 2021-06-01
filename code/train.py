@@ -22,7 +22,7 @@ writer = visuals.Writer(args.name)
 # Initialize the networks, optimizers, loss function and data
 generator = model.get_network(net_type='generator', args=args).to(device)
 discriminator = model.get_network(net_type='discriminator', args=args).to(device)
-adversarial_loss = torch.nn.BCELoss().to(device)
+adversarial_loss = torch.nn.MSELoss().to(device)
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 dataloader = dataloader.load_fashionMNIST(args, isTrain=True)

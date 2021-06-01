@@ -95,8 +95,7 @@ class Discriminator(nn.Module):
             spectral_norm(nn.Conv2d(ndf*2, ndf*4, kernel_size=4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, inplace=True),
             # final layer
-            spectral_norm(nn.Conv2d(ndf*4, 1, kernel_size=4, stride=1, padding=0, bias=False)),
-            nn.Sigmoid()
+            spectral_norm(nn.Conv2d(ndf*4, 1, kernel_size=4, stride=1, padding=0, bias=False))
         )
 
     def forward(self, input, label):
