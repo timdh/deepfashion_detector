@@ -18,7 +18,7 @@ def load_fashionMNIST(args, isTrain):
                     transform=transforms.Compose([
                         transforms.Resize(args.img_size),
                         transforms.ToTensor(),
-                        transforms.Normalize([0.5] * args.channels, [0.5] * args.channels)
+                        transforms.Normalize((0.5,) * args.channels, (0.5,) * args.channels)
                     ])),
         batch_size=args.batch_size, shuffle=True, drop_last=True)
     return data
