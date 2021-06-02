@@ -7,14 +7,14 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-import options
-import visuals
-import dataloader
-import model
+from code import options
+from code import visuals
+from code import dataloader
+from code import model
 
 # set the device, training/model arguments, init the experiment dir and init visual tools
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-args = options.get_args()
+args = options.get_args(['train', 'network'])
 img_save_path = os.path.join(args.name, 'images')
 os.makedirs(img_save_path, exist_ok=True)
 writer = visuals.Writer(args.name)
@@ -22,7 +22,7 @@ writer = visuals.Writer(args.name)
 # Initialize the networks, optimizers, loss function and data
 generator = model.get_network(net_type='generator', args=args).to(device)
 discriminator = model.get_network(net_type='discriminator', args=args).to(device)
-adversarial_loss = torch.nn.MSELoss().to(device)
+adversarial_loss = torch.nn.BCELoss()
 optimizer_G = torch.optim.Adam(generator.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=args.lr, betas=(args.beta1, args.beta2))
 dataloader = dataloader.load_fashionMNIST(args, isTrain=True)
