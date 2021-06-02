@@ -8,17 +8,19 @@ import torch.nn as nn
 from torch.nn.utils import spectral_norm
 
 
-def weights_init(net):
+def weights_init(m):
     """
     initialize the weights of the network
-    source: https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html
+    source: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/models/networks.py
     """
-    classname = net.__class__.__name__
-    if classname.find('Conv') != -1:
-        nn.init.normal_(net.weight.data, 0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        nn.init.normal_(net.weight.data, 1.0, 0.02)
-        nn.init.constant_(net.bias.data, 0)
+    classname = m.__class__.__name__
+    if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
+        nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+        if hasattr(m, 'bias') and m.bias is not None:
+            nn.init.constant_(m.bias.data, 0.0)
+    elif classname.find('BatchNorm2d') != -1:  # BatchNorm Layer's weight is not a matrix; only normal distribution applies.
+        nn.init.normal_(m.weight.data, 1.0, 0.02)
+        nn.init.constant_(m.bias.data, 0.0)
 
 def get_network(net_type, args):
     """
@@ -61,7 +63,6 @@ class Generator(nn.Module):
             nn.ConvTranspose2d(ngf*2+1, ngf, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(inplace=True),
-            # final layer
             nn.ConvTranspose2d(ngf, out_c, kernel_size=4, stride=2, padding=3, bias=False),
             nn.Tanh()
         )
@@ -95,7 +96,8 @@ class Discriminator(nn.Module):
             spectral_norm(nn.Conv2d(ndf*2, ndf*4, kernel_size=4, stride=2, padding=1, bias=False)),
             nn.LeakyReLU(0.2, inplace=True),
             # final layer
-            spectral_norm(nn.Conv2d(ndf*4, 1, kernel_size=4, stride=1, padding=0, bias=False))
+            spectral_norm(nn.Conv2d(ndf*4, 1, kernel_size=4, stride=1, padding=0, bias=False)),
+            nn.Sigmoid()
         )
 
     def forward(self, input, label):
