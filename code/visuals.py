@@ -1,5 +1,5 @@
 """
-This file handles the visualization part of the training process, ie, plotting 
+This file handles the visualization part of the project, ie, plotting 
 losses and saving images
 """
 
@@ -8,8 +8,8 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.utils import save_image
 
 
-def save_im(gen_imgs, save_name, epoch, batches_done, n_class):
-    im_name = save_name + '/%d-%d.png' % (epoch, batches_done)
+def save_im(gen_imgs, save_name, idx_1, idx_2, n_class=1):
+    im_name = os.path.join(save_name, str(idx_1) + '_' + str(idx_2) + '.png')
     save_image(gen_imgs.data, im_name, nrow=n_class, normalize=True)
 
 class Writer():
