@@ -15,6 +15,7 @@ from code import model
 # set the device, training/model arguments, init the experiment dir and init visual tools
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 args = options.get_args(['train', 'network'])
+args.name = os.path.join('checkpoints', args.name)
 img_save_path = os.path.join(args.name, 'images')
 os.makedirs(img_save_path, exist_ok=True)
 writer = visuals.Writer(args.name)
