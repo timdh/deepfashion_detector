@@ -19,9 +19,16 @@ class Writer():
     def __init__(self, exp_name):
         self.writer = SummaryWriter(os.path.join(exp_name, 'runs'))
 
-    def add_losses(self, g_loss, d_loss, batches_done):
-        self.writer.add_scalar("Loss/train/generator", g_loss, batches_done)
-        self.writer.add_scalar('Loss/train/discriminator', d_loss, batches_done)
+    def add_losses(self, g_loss, d_real, d_fake, batches_done):
+        self.writer.add_scalar("Losses/train/generator", g_loss, batches_done)
+        self.writer.add_scalar('Losses/train/discriminator', d_real+d_fake, batches_done)
+        self.writer.add_scalar('Losses/train/d_real', d_real, batches_done)
+        self.writer.add_scalar('Losses/train/d_fake', d_fake, batches_done)
+        self.writer.add_scalars('Losses/train/group', {
+            'generator': g_loss,
+            'd_real': d_real,
+            'd_fake': d_fake
+        }, batches_done)
 
     def close_writer(self):
         self.writer.flush()

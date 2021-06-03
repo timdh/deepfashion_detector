@@ -77,7 +77,7 @@ for epoch in range(args.n_epochs):
         if batches_done % args.print_interval == 0:
             print ("[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f]" % (epoch, args.n_epochs, i, len(dataloader),
                                                             d_loss.data.cpu(), g_loss.data.cpu()))
-            writer.add_losses(g_loss, d_loss, batches_done)
+            writer.add_losses(g_loss.item(), d_real_loss.item(), d_fake_loss.item(), batches_done)
 
         if epoch > 0 and epoch % args.save_interval == 0:
             torch.save(generator.state_dict(), os.path.join(args.name, 'gen_epoch_%d.pth' % epoch))
