@@ -40,7 +40,7 @@ def sample_dataset_uniform(args, save_ims, device):
     if save_ims:
         os.makedirs(args.dir_real)
         for i, im in enumerate(real_ims):
-            visuals.save_im(im, args.dir_gen, str(i).zfill(4), real_labels[i].item())
+            visuals.save_im(im, args.dir_real, str(i).zfill(4), real_labels[i].item())
 
     return (real_ims.to(device), real_labels.to(device))
 
