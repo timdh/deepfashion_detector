@@ -6,7 +6,6 @@ import os
 import numpy as np
 from PIL import Image
 import torch
-from torch.jit import Error
 import torchvision
 import torchvision.transforms as transforms
 
