@@ -19,7 +19,7 @@ def sample_generated(args, save_ims, device):
     synthesize samples from the trained GAN generator
     """
     generator = model.get_network(net_type='generator', args=args).to(device)
-    generator.load_state_dict(torch.load(os.path.join(args.saved_path, args.model_name)))
+    generator.load_state_dict(torch.load(os.path.join('checkpoints', args.name, args.model_name)))
     noise = Variable(torch.randn((args.n_sample, args.latent_dim, 1, 1)).to(device))
     gen_labels = Variable(torch.LongTensor(np.random.randint(0, args.n_classes, args.n_sample))).to(device)
     gen_imgs = generator(noise, gen_labels)
