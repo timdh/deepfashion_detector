@@ -9,18 +9,12 @@ from torch.nn.utils import spectral_norm
 
 
 def weights_init(m):
-    """
-    initialize the weights of the network
-    source: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/blob/master/models/networks.py
-    """
     classname = m.__class__.__name__
-    if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
-        nn.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
-        if hasattr(m, 'bias') and m.bias is not None:
-            nn.init.constant_(m.bias.data, 0.0)
-    elif classname.find('BatchNorm2d') != -1:  # BatchNorm Layer's weight is not a matrix; only normal distribution applies.
+    if classname.find('Conv') != -1:
+        nn.init.normal_(m.weight.data, 0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
         nn.init.normal_(m.weight.data, 1.0, 0.02)
-        nn.init.constant_(m.bias.data, 0.0)
+        nn.init.constant_(m.bias.data, 0)
 
 def get_network(net_type, args):
     """
@@ -46,21 +40,20 @@ class Generator(nn.Module):
         super(Generator, self).__init__()
         self.embedding = nn.Sequential(
             nn.Embedding(n_classes, emb_size),
-            nn.Linear(emb_size, 64)
+            nn.Linear(emb_size, 16)
         )
         self.mapping = nn.Sequential(
-            # upsample
+            # map to 4x4 image
             nn.ConvTranspose2d(l_dim, ngf*4, kernel_size=4, stride=1, padding=0, bias=False),
             nn.BatchNorm2d(ngf*4),
-            nn.ReLU(inplace=True),
-            # upsample
-            nn.ConvTranspose2d(ngf*4, ngf*2, kernel_size=4, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(ngf*2),
             nn.ReLU(inplace=True)
         )
         self.main = nn.Sequential(
             # upsample, +1 channel for the conditional input
-            nn.ConvTranspose2d(ngf*2+1, ngf, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.ConvTranspose2d(ngf*4+1, ngf*2, kernel_size=4, stride=2, padding=1, bias=False),
+            nn.BatchNorm2d(ngf*2),
+            nn.ReLU(inplace=True),
+            nn.ConvTranspose2d(ngf*2, ngf, kernel_size=4, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(ngf),
             nn.ReLU(inplace=True),
             nn.ConvTranspose2d(ngf, out_c, kernel_size=4, stride=2, padding=3, bias=False),
