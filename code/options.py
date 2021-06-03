@@ -4,7 +4,7 @@ This file defines the user arguments of the training/test and networks
 
 import argparse
 
-def get_args(options):
+def get_args(options=[]):
     """
     return the user arguments and print them
     input: a list of the desired options: ['train', 'network', 'generation']
@@ -36,6 +36,10 @@ def get_args(options):
         parser.add_argument('--dir_gen', type=str, default='samples/generated_samples', help='dir where generated samples are saved')
         parser.add_argument('--dir_real', type=str, default='samples/real_samples', help='dir where real samples from dataset are saved')
         parser.add_argument('--model_name', type=str, default='final_trained_generator.pth', help='name of the saved model')
+    if 'discriminator' in options:
+        parser.add_argument('--model_path', type=str, default='checkpoints/base_model/final_trained_discriminator.pth', help='path of the discriminator')
+        parser.add_argument('--im_path', type=str, required=True, help='path of the sample that will be classified')
+        parser.add_argument('--im_label', type=int, required=True, help='label of the image that defines the class')
     args = parser.parse_args()
     for arg in vars(args):
         print('-', arg+':', getattr(args, arg))
