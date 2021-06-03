@@ -71,5 +71,5 @@ real_batch = sample_dataset_uniform(args, args.not_save_samples, device)
 results_fake = args.n_sample - classify(args, fake_batch, fake_batch_gt, tag='fake')
 results_real = classify(args, real_batch, real_batch_gt, tag='real')
 
-accuracy = (results_fake + results_real) / (args.n_sample * 2)
+accuracy = (results_fake + results_real) / (args.n_sample * 2) * 100
 print(str(accuracy) + '% was accurately classified from a balanced (real/fake) set of', str(args.n_sample*2), 'samples')
