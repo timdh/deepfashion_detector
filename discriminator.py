@@ -1,3 +1,6 @@
+"""
+this file implements the command line application
+"""
 
 import json
 import torch
