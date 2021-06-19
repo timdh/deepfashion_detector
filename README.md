@@ -1,13 +1,11 @@
 # Deepfashion Detector
-Application that tells whether an image is a real or fake FashionMNIST data point. Fake images are generated with a GAN architecture.
+Application that tells whether an image is a real or fake FashionMNIST data point. Fake images are generated with a GAN generator, for the classifier we use the GAN discriminator.
 
 ## Prerequisites (tested on Linux)
 - Python 3
 - PyTorch
 - Torchvision
 - Tensorboard
-
-See `environment.yml` for an exact copy of the used packages and versions.
 
 ## Model
 The DCGAN architecture is used as the base model.
@@ -23,7 +21,7 @@ The weights of a pretrained model can be downloaded [here](https://drive.google.
 
 The above model has been trained for 40 epochs
 
-## Instructions for the command line application
+## Instructions for the fake fashion classifier
 To classify an image run `python discriminator.py --im_path=<path to image> --im_label=<corresponding label>`
 
 The above command assumes the that the discriminator is saved in the default path `checkpoints/base_model/final_trained_discriminator.pth`. The `--model_path` option allows to refer to the discriminator when it is saved on a different path.
@@ -33,9 +31,7 @@ The above command assumes the that the discriminator is saved in the default pat
 
 **Output:** `{"label": "fake", "confidence": 0.53}`
 
-## Answers to the questions
-
-### Loss function
+## Loss function
 The discriminator minimizes the following equation:
 
 <img src="images/d_loss.svg">
@@ -46,7 +42,7 @@ Whereas the generator maximizes the following equation:
 
 with z as noise vector, y as class label and x as real data sample from the dataset
 
-### Training loss curves and example images
+## Training loss curves and example images
 Legend: 
   - generator loss (dark blue)
   - discriminator loss on fake images (light blue)
@@ -59,9 +55,9 @@ Example images fake vs. real:
 
 <img src="images/fake_vs_real.png">
 
-### Accuracy of the discriminator as a classifier
+## Accuracy of the discriminator as a classifier
 
-72% of the 2000 (fake/real) images were correctly classified. However, the accuracy fluctuates per testing batch with sometimes achieving an accuracy under 50% (worse than guessing). This means that the discriminator is not an accurate classifier for detecting fake images. This is confirmed when we output the mean and standard deviation of the softmax prediction, which is around 0.5 ± 0.02; these numbers inidicate that the discriminator is not confident of its prediction. 
+We classify 2000 (fake/real) images with an accuracy of 72%. However, the accuracy fluctuates per testing batch with sometimes achieving an accuracy under 50% (worse than guessing). This means that the discriminator is not an accurate classifier for detecting fake images. This is confirmed when we output the mean and standard deviation of the softmax prediction, which is around 0.5 ± 0.02; these numbers inidicate that the discriminator is not confident of its prediction. 
 
 The above observations also make sense from a theoretical standpoint, as a well trained generator synthesizes images that are hard to detect for the discriminator. If the discriminator would achieve a high classification accuracy it would be too powerful for the generator, hence, not allowing the generator to generalize on the task at hand.
 
