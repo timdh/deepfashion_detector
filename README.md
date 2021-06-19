@@ -1,6 +1,8 @@
 # Deepfashion Detector
 Application that tells whether an image is a real or fake FashionMNIST data point. Fake images are generated with a GAN generator, for the classifier we use the GAN discriminator.
 
+The goal of this project is to see how a trained discrimniator performs as a classifier of real/fake images.
+
 ## Prerequisites (tested on Linux)
 - Python 3
 - PyTorch
@@ -34,11 +36,11 @@ The above command assumes the that the discriminator is saved in the default pat
 ## Loss function
 The discriminator minimizes the following equation:
 
-<img src="images/d_loss.svg">
+<img src="images/d_loss.png">
 
 Whereas the generator maximizes the following equation:
 
-<img src="images/g_loss.svg">
+<img src="images/g_loss.png">
 
 with z as noise vector, y as class label and x as real data sample from the dataset
 
