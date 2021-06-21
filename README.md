@@ -7,10 +7,10 @@ Classifier that tells whether an image is a real or fake FashionMNIST data point
 <img src="images/fake_vs_real.png">
 
 ## Prerequisites (tested on Linux and macOS)
-- Python >= 3.6
-- PyTorch (1.7)
-- Torchvision (0.8)
-- Protobuf (3.6, for torch.tensorboard)
+- Python 3.6
+- PyTorch 1.7
+- Torchvision 0.8
+- Protobuf 3.6 (for torch.tensorboard)
 
 ## Model
 The DCGAN architecture is used as the base model.
@@ -34,7 +34,8 @@ To classify an image run `python discriminator.py --im_path=<path to image> --im
 The above command assumes the that the discriminator is saved in the default path `checkpoints/base_model/final_trained_discriminator.pth`. The `--model_path` option allows to refer to the discriminator when it is saved on a different path.
 
 **Input:**`python discriminator.py --im_path=images/0005_8.png --im_label=8`
-<img src="images/0005_8.png">
+
+input image: <img src="images/0005_8.png">
 
 **Output:** `{"label": "fake", "confidence": 0.53}`
 
