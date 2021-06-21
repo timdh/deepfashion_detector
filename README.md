@@ -1,13 +1,13 @@
 # Deepfashion Detector
-Classifier that tells whether an image is a real or fake FashionMNIST data point. Fake images are generated with a GAN generator, for the classifier we use the GAN discriminator.
+Classifier that tells whether an image is a real or fake FashionMNIST data point. Fake images are generated with a cGAN generator, for the classifier we use the cGAN discriminator.
 
-* The objective of this project is to see how a trained discrimniator performs as a classifier of real/fake images.
+* The objective of this project is to see in practice how a trained discrimniator performs as a classifier of real/fake images.
 
-## Prerequisites (tested on Linux)
-- Python 3
-- PyTorch
-- Torchvision
-- Tensorboard
+## Prerequisites (tested on Linux and macOS)
+- Python >= 3.6
+- PyTorch (1.7)
+- Torchvision (0.8)
+- Protobuf (3.6, for torch.tensorboard)
 
 ## Model
 The DCGAN architecture is used as the base model.
@@ -19,9 +19,9 @@ To train the model with default options run `python train.py`. Please check `opt
 
 ### Trained model weights
 
-The weights of a pretrained model can be downloaded [here](https://drive.google.com/drive/folders/16Qi0mQDVYo2tEl5ihA4qp868G8K3DIyQ?usp=sharing). After downloading, please make sure that the downloaded directory is placed in the working directory of the project.
+The weights of a pretrained model can be downloaded [here](https://drive.google.com/drive/folders/16Qi0mQDVYo2tEl5ihA4qp868G8K3DIyQ?usp=sharing). After downloading, please make sure the downloaded directory is placed in the working directory of the project.
 
-The above model has been trained for 40 epochs
+The above model has been trained for 40 epochs.
 
 ## Instructions for the fake fashion classifier
 To classify an image run `python discriminator.py --im_path=<path to image> --im_label=<corresponding label>`
@@ -63,7 +63,7 @@ We classify 2000 (fake/real) images with an accuracy of 72%. However, the accura
 
 The above observations also make sense from a theoretical standpoint, as a well trained generator synthesizes images that are hard to detect for the discriminator. If the discriminator would achieve a high classification accuracy it would be too powerful for the generator, hence, not allowing the generator to generalize on the task at hand.
 
-In conclusion, spotting real from fake images is a hard task for the discriminator.
+In conclusion, spotting real from fake images is a hard task for the GAN discriminator.
 
 ## Acknowledgments
 
