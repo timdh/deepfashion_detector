@@ -42,8 +42,9 @@ def sample_uniform(args):
 def load_im(args):
     try:
         im = Image.open(args.im_path).convert('L')
-    except:
+    except Exception as e:
         print('error: could not load image. Please check the path [%s]' % args.im_path)
+        print(e)
         exit()
     transform = transforms.Compose([transforms.Resize(args.img_size),
                                 transforms.ToTensor(),
